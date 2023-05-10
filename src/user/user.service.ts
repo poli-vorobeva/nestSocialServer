@@ -30,7 +30,7 @@ export class UserService {
 	}
 
 	async getUser(id: mongoose.Schema.Types.ObjectId): Promise<User> {
-		const user = await this.userModel.findById(id)
+		const user = await this.userModel.findById(id).populate('posts')
 		return user
 	}
 
@@ -77,4 +77,11 @@ export class UserService {
 		return user
 	}
 
+	async getFeed(userId: mongoose.Schema.Types.ObjectId) {
+		const user = await this.userModel.findById(userId)
+		const friendsId= user.friends.map(friend=> friend.friendId)
+		const friends = await Promise.all(friendsId.map(friend=>this.userModel.findById(friend).populate('posts')))
+		const friendsPosts=friends.map(fr=>fr.posts)
+		return friendsPosts
+	}
 }
